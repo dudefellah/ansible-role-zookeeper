@@ -1,0 +1,144 @@
+---
+# tasks file for ansible-role-zookeeper
+- name: Set some role-based facts
+  include_tasks: gather_role_facts.yml
+
+- name: Install zookeeper package dependencies
+  package:
+    name: "{{ _zookeeper_packages }}"
+    state: present
+
+- name: Stat the destination dir
+  stat:
+    path: "{{ zookeeper_root_dir }}"
+  register: _zookeeper_st
+  tags:
+    - install
+
+- name: Load the checksum
+  slurp:
+    path: "{{ zookeeper_root_dir }}/.zookeeper_ansible_checksum"
+  failed_when: false
+  register: _checksum
+  tags:
+    - install
+
+- name: Create destination dir
+  file:
+    path: "{{ zookeeper_root_dir }}"
+    state: directory
+    owner: "{{ zookeeper_user | default('root') }}"
+    group: "{{ zookeeper_group | default('root') }}"
+    # Default directories: 0755, files: 0644
+    mode: "{{ zookeeper_mode | default('u+rwX,go+rX,go-w') }}"
+  when:
+    - "not _zookeeper_st.stat.exists"
+  tags:
+    - install
+
+- block:
+    - name: Create a tmpdir for the archive
+      tempfile:
+        state: directory
+      register: _archive_tmpdir
+
+    - name: Create a tmpdir for the extracted resources
+      tempfile:
+        state: directory
+      register: _resources_tmpdir
+
+    - name: Download archive
+      get_url:
+        url: "{{ zookeeper_release_url }}"
+        dest: "{{ _archive_tmpdir.path }}/{{ zookeeper_release_url | basename }}"
+        checksum: "{{ zookeeper_release_checksum | default(omit) }}"
+
+    - name: Get the archive checksum
+      stat:
+        path: "{{ _archive_tmpdir.path }}/{{ zookeeper_release_url | basename }}"
+      register: _src_st
+
+    - name: Extract the archive
+      unarchive:
+        src: "{{ _archive_tmpdir.path }}/{{ zookeeper_release_url | basename }}"
+        dest: "{{ _resources_tmpdir.path }}"
+        owner: "{{ zookeeper_user }}"
+        group: "{{ zookeeper_group }}"
+        mode: 'u+rwX,go+rX,go-w'
+        remote_src: "{{ zookeeper_release_remote_src | bool }}"
+      register: _extraction
+
+    - name: Output the appropriate checksum
+      copy:
+        content: "{{ _src_st.stat.checksum }}"
+        mode: "0644"
+        dest: >-
+          {{ _resources_tmpdir.path }}/{{ _zookeeper_base_dir }}/.zookeeper_ansible_checksum
+
+    - name: Synchronize tmpdir over to the prefix dir
+      synchronize:
+        src: >-
+          {{ _resources_tmpdir.path }}/{{ _zookeeper_base_dir }}/
+        dest: "{{ zookeeper_root_dir }}/"
+        owner: true
+        group: true
+      delegate_to: "{{ inventory_hostname }}"
+  always:
+    - name: Cleanup tmpdir
+      file:
+        path: "{{ _archive_tmpdir.path }}"
+        state: absent
+
+    - name: Cleanup tmpdir
+      file:
+        path: "{{ _resources_tmpdir.path }}"
+        state: absent
+  when:
+    - >-
+      ('content' is not in _checksum) or
+      (
+        (zookeeper_release_checksum is not none) and
+        ((_checksum.content | b64decode) != zookeeper_release_checksum)
+      )
+
+- block:
+    - name: Install zookeeper systemd service
+      template:
+        src: zookeeper.systemd.service.j2
+        dest: "/etc/systemd/system/{{ zookeeper_service_name }}.service"
+        owner: root
+        group: root
+        mode: "0644"
+      notify:
+        - systemctl daemon-reload
+
+    - name: Install zookeeper environment defaults
+      template:
+        src: environment-file.j2
+        dest: "{{ zookeeper_environment_file }}"
+        owner: root
+        group: root
+        mode: "0644"
+      vars:
+        environment_vars: "{{ zookeeper_environment }}"
+
+    - name: Flush handlers
+      meta: flush_handlers
+
+- name: Install the zookeeper config file
+  template:
+    src: zookeeper.properties.j2
+    dest: "{{ zookeeper_cfg_dir }}/{{ zookeeper_cfg_file }}"
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+    mode: "0644"
+  notify:
+    - restart zookeeper
+
+- name: Set zookeeper service state
+  service:
+    name: "{{ zookeeper_service_name }}"
+    state: "{{ zookeeper_service_state }}"
+    enabled: "{{ zookeeper_service_enabled }}"
+  tags:
+    - service

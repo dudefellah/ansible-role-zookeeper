@@ -1,0 +1,4 @@
+# {{ ansible_managed }}
+{% for env_key, env_val in environment_vars.items() %}
+{{ env_key }}="{{ env_val }}"
+{% endfor %}

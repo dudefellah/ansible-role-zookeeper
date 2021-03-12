@@ -1,0 +1,71 @@
+---
+# defaults file for ansible-role-zookeeper
+zookeeper_packages: null
+
+# The zookeeper release URL. This should be a URL to the _binary_ release,
+# since this role won't try to build from the source release if supplied.
+zookeeper_release_url: https://muug.ca/mirror/apache-dist/zookeeper/zookeeper-3.6.2/apache-zookeeper-3.6.2-bin.tar.gz
+
+zookeeper_release_remote_src: true
+
+# Optionally set a checksum to use to verify the apache zookeeper download
+zookeeper_release_checksum: null
+
+# Root path for the zookeeper installation
+zookeeper_root_dir: /opt/zookeeper
+
+zookeeper_cfg_dir: "{{ zookeeper_root_dir }}/conf"
+zookeeper_cfg_file: zoo.cfg
+
+# Default file permissions for installed zookeeper files. These will only
+# be set on new files, and not every time the role is run
+zookeeper_mode: 'u+rwX,go+rX,go-w'
+
+# User and group to run the zookeeper processes
+zookeeper_user: zookeeper
+zookeeper_group: zookeeper
+
+# A service name that is used by zookeeper when creating and accessing
+# the zookeeper systemd service
+zookeeper_service_name: zookeeper
+
+# State of the zookeeper service to set by this role
+zookeeper_service_state: started
+
+# Enable/disable the systemd service on boot
+zookeeper_service_enabled: true
+
+# State to use when running the 'restart' handler. Can be set to
+# null to skip running the handler entirely.
+zookeeper_service_restart_state: restarted
+
+# Extra environment variables to pass before running the zookeeper server.
+# This may be of minimal benefit since the zkServer.sh script will run its
+# own environment-setting script beforehand. It could be useful though.
+zookeeper_environment_file: /etc/default/zookeeper
+
+# A dict of values to add to zookeeper_environment_file
+zookeeper_environment: {}
+
+# The pidfile to be checked by the systed service. This default is used by
+# the (tested) Zookeeper software, so changing this may break things.
+zookeeper_pidfile: /run/zookeeper.pid
+
+# Values for the zoo.cfg file
+#
+# "dataDir"
+zookeeper_data_dir: /tmp/zookeeper
+
+# "clientPort"
+zookeeper_client_port: 2181
+
+# "maxClientCnxns"
+zookeeper_max_client_cnxns: 10
+
+# "admin.enableServer"
+zookeeper_admin_enable_server: false
+# "admin.serverPort"
+zookeeper_admin_server_port: 8080
+
+# Any extra values to add to the config file
+zookeeper_extra_properties: {}

@@ -1,0 +1,46 @@
+---
+# zookeeper_packages var, or if unset:
+# zookeeper_<distro><distro_ver>, or if unset
+# zookeeper_<distro> or null
+- name: Set the list of packages to install
+  set_fact:
+    _zookeeper_packages: >-
+      {%- if zookeeper_packages is not none -%}
+      {{ zookeeper_packages }}
+      {%- elif (
+            lookup(
+              'vars',
+              (
+                '__zookeeper_packages_' +
+                ansible_distribution|lower|string +
+                ansible_distribution_major_version|lower|string
+              ),
+              default=[]
+            ) | length
+          ) > 0 -%}
+      {{- lookup(
+            'vars',
+            (
+              '__zookeeper_packages_' +
+              ansible_distribution|lower|string +
+              ansible_distribution_major_version|lower|string
+            ),
+            default=[]
+          ) -}}
+      {%- else -%}
+        {{- lookup(
+              'vars',
+              (
+                '__zookeeper_packages_' +
+                ansible_distribution|lower|string
+              ),
+              default=[]
+            ) -}}
+      {%- endif -%}
+
+- name: Store the base extraction directory for zookeeper
+  set_fact:
+    _zookeeper_base_dir: >-
+      {{- zookeeper_release_url | basename |
+          regex_replace('.tgz$', '') | regex_replace('.tar.gz$', '') |
+          regex_replace('.tar.bz2$', '') -}}

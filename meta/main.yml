@@ -1,0 +1,29 @@
+galaxy_info:
+  author: dudefellah
+  role_name: zookeeper
+  description: Install and configure Apache Zookeeper
+
+  license: GPL-2.0-or-later
+
+  min_ansible_version: 2.9
+
+  platforms:
+    - name: EL
+      versions:
+        - 7
+        - 8
+    - name: Debian
+      versions:
+        - 9
+# Tests on Buster seem to fail the first time and then work after
+# that. I won't officially list this as a version, but it should
+# "mostly" work if you try it.
+# - 10
+
+  galaxy_tags:
+    - apache
+    - cluster
+    - ha
+    - zookeeper
+
+dependencies: []

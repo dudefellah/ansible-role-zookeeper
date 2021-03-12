@@ -1,0 +1,20 @@
+[Unit]
+Requires=network.target remote-fs.target
+After=network.target remote-fs.target
+
+[Service]
+Type=forking
+User={{ zookeeper_user }}
+Environment=ZOOKEEPER_DIR={{ zookeeper_root_dir }}
+Environment=ZOOCFGDIR={{ zookeeper_cfg_dir }}
+Environment=ZOOCFG={{ zookeeper_cfg_file }}
+Environment=ZOOPIDFILE={{ zookeeper_pidfile }}
+EnvironmentFile=-{{ zookeeper_environment_file }}
+ExecStart={{ zookeeper_root_dir }}/bin/zkServer.sh start
+TimeoutStartSec=5
+PIDFile={{ zookeeper_pidfile }}
+SuccessExitStatus=0
+Restart=on-abnormal
+
+[Install]
+WantedBy=multi-user.target

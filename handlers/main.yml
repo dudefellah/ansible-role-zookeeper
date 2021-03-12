@@ -1,0 +1,15 @@
+---
+# handlers file for ansible-role-zookeeper
+- name: Daemon reload
+  systemd:
+    daemon_reload: true
+  listen: systemctl daemon-reload
+
+- name: Set service state
+  service:
+    name: "{{ zookeeper_service_name }}"
+    state: "{{ zookeeper_service_restart_state }}"
+    enabled: "{{ zookeeper_service_enabled }}"
+  listen: restart zookeeper
+  when:
+    - "zookeeper_service_restart_state is not none"

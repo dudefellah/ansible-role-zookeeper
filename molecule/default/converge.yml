@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include ansible-role-zookeeper"
+      include_role:
+        name: "ansible-role-zookeeper"
+      vars:
+        zookeeper_user: root
+        zookeeper_group: root
