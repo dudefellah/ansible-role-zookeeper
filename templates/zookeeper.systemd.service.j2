@@ -10,8 +10,17 @@ Environment=ZOOCFGDIR={{ zookeeper_cfg_dir }}
 Environment=ZOOCFG={{ zookeeper_cfg_file }}
 Environment=ZOOPIDFILE={{ zookeeper_pidfile }}
 EnvironmentFile=-{{ zookeeper_environment_file }}
+{% if zookeeper_startup_script_file is not none %}
+# This script with default settings can wait up to 20 seconds (+ the amount
+# required to actually load files, exec processes, etc) so it's useful to
+# be aware that the TimeoutStartSec needs to cover this duration of time.
+# If it doesn't, then systemd might cut off the script before it's done truly
+# waiting for zookeeper
+ExecStart={{ zookeeper_startup_script_file }}
+{% else %}
 ExecStart={{ zookeeper_root_dir }}/bin/zkServer.sh start
-TimeoutStartSec=5
+{% endif %}
+TimeoutStartSec=20
 PIDFile={{ zookeeper_pidfile }}
 SuccessExitStatus=0
 Restart=on-abnormal

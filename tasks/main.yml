@@ -125,6 +125,16 @@
     - name: Flush handlers
       meta: flush_handlers
 
+- name: Install the zookeeper startup script
+  copy:
+    src: "zookeeper"
+    dest: "{{ zookeeper_startup_script_file }}"
+    owner: root
+    group: root
+    mode: "0755"
+  when:
+    - "zookeeper_startup_script_file is not none"
+
 - name: Install the zookeeper config file
   template:
     src: zookeeper.properties.j2
@@ -134,6 +144,22 @@
     mode: "0644"
   notify:
     - restart zookeeper
+
+- name: Create the zookeeper data dir
+  file:
+    path: "{{ zookeeper_data_dir }}"
+    state: directory
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+    mode: "0755"
+
+- name: Output the zookeeper ID
+  copy:
+    content: "{{ zookeeper_id }}"
+    dest: "{{ zookeeper_data_dir }}/myid"
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+    mode: "0644"
 
 - name: Set zookeeper service state
   service:

@@ -26,6 +26,16 @@ admin.enableServer={% if zookeeper_admin_enable_server | bool %}true{% else %}fa
 
 admin.serverPort={{ zookeeper_admin_server_port }}
 
-{% for k, v in zookeeper_extra_properties.items() %}
-{{ k }}={{ v }}
+tickTime={{ zookeeper_tick_time }}
+initLimit: {{ zookeeper_init_limit }}
+syncLimit: {{ zookeeper_sync_limit }}
+{% for z in zookeeper_servers %}
+server.{{ loop.index }}={{ z }}
 {% endfor %}
+
+{% if zookeeper_4lw_commands_whitelist is not none %}
+4lw.commands.whitelist={{ zookeeper_4lw_commands_whitelist | join(', ') }}
+{% endif %}
+
+# Extra Zookeeper Config Options
+{{ zookeeper_extra_properties }}

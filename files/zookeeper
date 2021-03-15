@@ -1,0 +1,109 @@
+#!/bin/sh
+
+# Helper script to make starting zookeeper with systemd a little more sane.
+
+# Zookeeper will immediately write a pidfile before it has even finished
+# checking to see if everything is running properly, so there's a good
+# possibility of an error causing zookeeper to start and write out a pidfile,
+# resulting in systemd thinking everything's fine only to have zookeeper die
+# a few seconds later. This script will start zookeeper, and wait some
+# predetermined amount of time to ensure that the pidfile still exists over
+# that time before deeming the start a success.
+
+set -e
+
+ZOOKEEPER_DIR=${ZOOKEEPER_DIR-/opt/zookeeper}
+ZOOCF=${ZOOCFG-zoo.cfg}
+ZOOCFGDIR=${ZOOCFGDIR-"${ZOOKEEPER_DIR}/config"}
+PIDFILE=${PIDFILE-/run/zookeeper.pid}
+WAIT_TIME=${WAIT_TIME-10} # seconds
+
+usage() {
+        cat >&2 <<EOOPTS
+$(basename $0) [OPTIONS]
+
+OPTIONS:
+  -h:         Print this help message
+  -x:         Enable Debugging
+
+  -c <C>:     Use <C> as the zookeeper config filename
+              Default: $ZOOCFG
+
+  -d <D>:     Use <c> as the zookeeper config directory
+              Default: $ZOOCFGDIR
+
+  -z <Z>:     Use <Z> as the zookeeper root dir. Default: ${ZOOKEEPER_DIR}.
+EOOPTS
+}
+
+while getopts "hxc:w:z:" opt; do
+        case $opt in
+        h)
+                usage
+                exit 0
+                ;;
+        x)
+                set -x
+                DEBUG=1
+                ;;
+        c)
+                ZOOCFG=$OPTARG
+                ;;
+        d)
+                ZOOCFGDIR=$OPTARG
+                ;;
+        w)
+                WAIT_TIME=$OPTARG
+                ;;
+        z)
+                ZOOKEEPER_DIR=$OPTARG
+                ;;
+        *)
+                echo "Invalid option: -$OPTARG" >&2
+                exit 1
+                ;;
+        esac
+done
+
+shift "$((OPTIND - 1))"
+
+if [ -f "${PIDFILE}" ] && kill -0 "$(cat $PIDFILE)"; then
+    echo "Zookeeper seems to already be running" >&2
+    exit 0
+fi
+
+export ZOOBINDIR=$ZOOKEEPER_DIR/bin
+export ZOOCFG
+export ZOOCFGDIR
+
+$ZOOKEEPER_DIR/bin/zkServer.sh start
+
+START=$(date +%s)
+NOW=$(date +%s)
+
+# This isn't the _actual_ wait loop. Here's we're doing an initial few checks
+# to see that the pidfile shows up
+while [ "$(expr $NOW - $START)" -lt "${WAIT_TIME}" ] && [ ! -f "${PIDFILE}" ]; do
+    sleep 1
+    NOW=$(date +%s)
+done
+
+if [ ! -f "${PIDFILE}" ]; then
+    echo "No PID file written by zookeeper" >&2
+    exit 1
+fi
+
+# Now we wait to see if the pidfle disappears
+START=$(date +%s)
+NOW=$(date +%s)
+while [ "$(expr $NOW - $START)" -lt "${WAIT_TIME}" ] && [ -f "${PIDFILE}" ]; do
+    sleep 1
+    NOW=$(date +%s)
+done
+
+if [ ! -f "${PIDFILE}" ]; then
+    echo "PID file has disappeared" >&2
+    exit 1
+fi
+
+exit 0

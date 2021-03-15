@@ -39,6 +39,10 @@ zookeeper_service_enabled: true
 # null to skip running the handler entirely.
 zookeeper_service_restart_state: restarted
 
+# This is the location of our helper script that does some additional
+# checking when starting zookeeper
+zookeeper_startup_script_file: /usr/local/bin/zookeeper
+
 # Extra environment variables to pass before running the zookeeper server.
 # This may be of minimal benefit since the zkServer.sh script will run its
 # own environment-setting script beforehand. It could be useful though.
@@ -50,6 +54,9 @@ zookeeper_environment: {}
 # The pidfile to be checked by the systed service. This default is used by
 # the (tested) Zookeeper software, so changing this may break things.
 zookeeper_pidfile: /run/zookeeper.pid
+
+# ID value to be set in the 'myid' file
+zookeeper_id: 1
 
 # Values for the zoo.cfg file
 #
@@ -67,5 +74,31 @@ zookeeper_admin_enable_server: false
 # "admin.serverPort"
 zookeeper_admin_server_port: 8080
 
+# "tickTime"
+zookeeper_tick_time: 2000
+
+# "initLimit"
+zookeeper_init_limit: 5
+
+# "syncLimit"
+zookeeper_sync_limit: 2
+
+# Servers for listing out a cluster.
+# These will be listed in list order, so you will have to match your current
+# host to the proper ID position in this list. Eg. server "5" should be the
+# 5th item in this list
+zookeeper_servers: []
+# eg.  - node1:2888:3888
+#      - node2:2888:3888
+#      - node3:2888:3888
+
+# "4lw.commands.whitelist"
+zookeeper_4lw_commands_whitelist: []
+# Eg.
+#  - stat
+#  - ruok
+#  - conf
+#  - isro
+
 # Any extra values to add to the config file
-zookeeper_extra_properties: {}
+zookeeper_extra_properties: ""
