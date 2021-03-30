@@ -55,6 +55,13 @@ zookeeper_environment: {}
 # the (tested) Zookeeper software, so changing this may break things.
 zookeeper_pidfile: /run/zookeeper.pid
 
+# Set the jass config filename here. If relative, the file will be placed under
+# the zookeeper_root_dir. If null, it won't be placed anywhere.
+zookeeper_jaas_conf_file: null
+
+# The config to place inside of the JaaS config file.
+zookeeper_jaas: ""
+
 # ID value to be set in the 'myid' file
 zookeeper_id: 1
 
@@ -63,8 +70,14 @@ zookeeper_id: 1
 # "dataDir"
 zookeeper_data_dir: /tmp/zookeeper
 
+# "dataLogDir" - will default to "zookeeper_root_dir/logs"
+zookeeper_data_log_dir: null
+
 # "clientPort"
 zookeeper_client_port: 2181
+
+# "secureClientPort" - will be omitted if null
+zookeeper_secure_client_port: 2281
 
 # "maxClientCnxns"
 zookeeper_max_client_cnxns: 10

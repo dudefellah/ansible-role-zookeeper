@@ -44,3 +44,16 @@
       {{- zookeeper_release_url | basename |
           regex_replace('.tgz$', '') | regex_replace('.tar.gz$', '') |
           regex_replace('.tar.bz2$', '') -}}
+
+- name: Store the jass file name
+  set_fact:
+    _zookeeper_jaas_conf_file: >-
+      {%- if zookeeper_jaas_conf_file is not none %}
+        {%- if zookeeper_jaas_conf_file.startswith('/') -%}
+        {{ zookeeper_jaas_conf_file }}
+        {%- else -%}
+        {{ zookeeper_root_dir }}/conf/{{ zookeeper_jaas_conf_file }}
+        {%- endif -%}
+      {%- else -%}
+      {{ none }}
+      {%- endif -%}

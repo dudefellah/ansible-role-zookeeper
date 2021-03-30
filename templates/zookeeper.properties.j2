@@ -16,8 +16,14 @@
 # limitations under the License.
 # the directory where the snapshot is stored.
 dataDir={{ zookeeper_data_dir }}
+{% if zookeeper_data_log_dir is not none -%}
+dataLogDir={{ zookeeper_data_log_dir }}
+{%- endif -%}
 # the port at which the clients will connect
 clientPort={{ zookeeper_client_port }}
+{% if zookeeper_secure_client_port is not none %}
+secureClientPort={{ zookeeper_secure_client_port }}
+{% endif -%}
 # disable the per-ip limit on the number of connections since this is a non-production config
 maxClientCnxns={{ zookeeper_max_client_cnxns }}
 # Disable the adminserver by default to avoid port conflicts.
@@ -27,8 +33,8 @@ admin.enableServer={% if zookeeper_admin_enable_server | bool %}true{% else %}fa
 admin.serverPort={{ zookeeper_admin_server_port }}
 
 tickTime={{ zookeeper_tick_time }}
-initLimit: {{ zookeeper_init_limit }}
-syncLimit: {{ zookeeper_sync_limit }}
+initLimit={{ zookeeper_init_limit }}
+syncLimit={{ zookeeper_sync_limit }}
 {% for z in zookeeper_servers %}
 server.{{ loop.index }}={{ z }}
 {% endfor %}

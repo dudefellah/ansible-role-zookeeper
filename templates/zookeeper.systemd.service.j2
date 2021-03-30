@@ -4,7 +4,8 @@ After=network.target remote-fs.target
 
 [Service]
 Type=forking
-User={{ zookeeper_user }}
+#User={{ zookeeper_user }}
+User=root
 Environment=ZOOKEEPER_DIR={{ zookeeper_root_dir }}
 Environment=ZOOCFGDIR={{ zookeeper_cfg_dir }}
 Environment=ZOOCFG={{ zookeeper_cfg_file }}

@@ -145,6 +145,18 @@
   notify:
     - restart zookeeper
 
+- name: Output the jaas conf
+  template:
+    src: jaas.conf.j2
+    dest: "{{ _zookeeper_jaas_conf_file }}"
+    owner: root
+    group: root
+    mode: "0600"
+  notify:
+    - restart zookeeper
+  when:
+    - "_zookeeper_jaas_conf_file is not none"
+
 - name: Create the zookeeper data dir
   file:
     path: "{{ zookeeper_data_dir }}"
