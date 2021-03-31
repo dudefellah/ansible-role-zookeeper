@@ -155,6 +155,7 @@
   notify:
     - restart zookeeper
   when:
+    - "_zookeeper_jaas_conf_file is defined"
     - "_zookeeper_jaas_conf_file is not none"
 
 - name: Create the zookeeper data dir
