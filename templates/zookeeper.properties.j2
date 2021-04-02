@@ -19,6 +19,10 @@ dataDir={{ zookeeper_data_dir }}
 {% if zookeeper_data_log_dir is not none -%}
 dataLogDir={{ zookeeper_data_log_dir }}
 {%- endif -%}
+
+zookeeper.clientCnxnSocket="{{ zookeeper_client_cnxns_socket }}"
+zookeeper.serverCnxnFactory="{{ zookeeper_server_cnxns_factory }}"
+
 # the port at which the clients will connect
 clientPort={{ zookeeper_client_port }}
 {% if zookeeper_secure_client_port is not none %}
@@ -39,7 +43,10 @@ syncLimit={{ zookeeper_sync_limit }}
 server.{{ loop.index }}={{ z }}
 {% endfor %}
 
-{% if zookeeper_4lw_commands_whitelist is not none %}
+{% if (
+    (zookeeper_4lw_commands_whitelist is not none) and
+    (zookeeper_4lw_commands_whitelist|length > 0)
+) %}
 4lw.commands.whitelist={{ zookeeper_4lw_commands_whitelist | join(', ') }}
 {% endif %}
 

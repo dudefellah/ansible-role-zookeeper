@@ -73,6 +73,18 @@ zookeeper_data_dir: /tmp/zookeeper
 # "dataLogDir" - will default to "zookeeper_root_dir/logs"
 zookeeper_data_log_dir: null
 
+# Zookeeper client cnxns socket value class -
+# org.apache.zookeeper.ClientCnxnSocketNetty or
+# org.apache.zookeeper.ClientCnxnSocketNIO or
+# something custom
+zookeeper_client_cnxns_socket: "org.apache.zookeeper.ClientCnxnSocketNetty"
+
+# Zookeeper server cnxns factory class -
+# org.apache.zookeeper.server.NettyServerCnxnFactory or
+# org.apache.zookeeper.server.NIOServerCnxnFactory or
+# something custom
+zookeeper_server_cnxns_factory: "org.apache.zookeeper.server.NettyServerCnxnFactory"
+
 # "clientPort"
 zookeeper_client_port: 2181
 

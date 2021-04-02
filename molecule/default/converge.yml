@@ -8,3 +8,6 @@
       vars:
         zookeeper_user: root
         zookeeper_group: root
+        zookeeper_secure_client_port: null
+        zookeeper_extra_properties: |
+          zookeeper.client.secure=false
