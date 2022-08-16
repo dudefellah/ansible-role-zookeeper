@@ -55,5 +55,5 @@
         {{ zookeeper_root_dir }}/conf/{{ zookeeper_jaas_conf_file }}
         {%- endif -%}
       {%- else -%}
-      {{ none }}
+      null
       {%- endif -%}
